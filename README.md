@@ -1,2 +1,2 @@
 # coursera
-this repository including the homework of coursera, such as althgorisms.
+ Weekwork of coursera algorithm, including algorithm partI and partII.
