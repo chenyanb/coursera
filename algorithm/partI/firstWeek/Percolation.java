@@ -119,6 +119,7 @@ public class Percolation {
         Percolation per = new Percolation(n);
         per.open(1, 1);
         System.out.println(per.percolates());
+        per = null;//every time you don't need a reference,remember to delete it.
     }
 
 }

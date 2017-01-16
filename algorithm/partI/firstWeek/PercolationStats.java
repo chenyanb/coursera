@@ -41,6 +41,9 @@ public class PercolationStats {
                 pro = ((double) test.numberOfOpenSites()) / (dimension * dimension);
                 eachPro[i - 1] = pro; // storage each trails probability
             }
+            
+            test = null;////every time you make full use of a reference, than remember to delte the reference, than the garbage collection can recycle it's memory.
+                        //and the one line coding improving my score to 100 from 95. remember to delete you reference once you don't need it.
 
             for (int j = 0; j < num; j++) { // computer average probability and return                                          
                 averPro += eachPro[j];
@@ -99,6 +102,6 @@ public class PercolationStats {
         System.out.println("mean \t" + percolation.mean());
         System.out.println("stddev \t" + percolation.stddev());
         System.out.println("95% confidence interval \t" + percolation.confidenceLo() + " ," + percolation.confidenceHi());
-
+        percolation = null;//delete the reference
     }
 }
