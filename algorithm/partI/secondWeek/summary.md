@@ -33,4 +33,5 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
          ............
 ```
-
+note:
+    this implementation will lead a compile warning, like," unchecked or unsafe operations" or "unchecked cast"
