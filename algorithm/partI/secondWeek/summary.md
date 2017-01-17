@@ -35,3 +35,4 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 ```
 note:
     this implementation will lead a compile warning, like," unchecked or unsafe operations" or "unchecked cast"
+    As for implementing in array, i did it today, it seems simple, but i did spend a lot of time in debug and make deep clear what reference means.Although spend much time, but i actually have deep understand in reference.And the score is 100, very nice.Although a simple coding,  but once you inplemented it you can learn a lot. 

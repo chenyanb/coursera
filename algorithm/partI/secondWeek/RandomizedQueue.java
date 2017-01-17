@@ -1,117 +1,101 @@
 import java.util.Iterator;
-
 import edu.princeton.cs.algs4.StdRandom;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
+    private Item[] arr;
     private int size;
-    private Node<Item> first, last;
 
     public RandomizedQueue() {// construct an empty randomized queue
-
+        arr = (Item[]) new Object[1];// is equal to generic array
+        this.size = 0;
     }
 
-    public boolean isEmpty() {// is the queue empty?
-        return size == 0;
+    private RandomizedQueue(int size) {//this construct is for iterator()
+        arr = (Item[]) new Object[size];
+        this.size = size;
     }
 
-    public int size() {// return the number of items on the queue
-        return size;
+    public boolean isEmpty() {
+        return size == 0;// is the queue empty?
     }
 
-    public void enqueue(Item item) {// add the item from the head of the link
-        if (item == null) {
-            throw new java.lang.NullPointerException("can not add a null item");
-        } else {
-            if (size == 0) {
-                // Node<Item> newNode = new Node<Item>(item, null, null);
-                // first = newNode;
-                // last = newNode;
-                first = new Node<Item>(item, null, null);
-                last = first;
-            } else {
-                Node<Item> newNode = new Node<Item>(item, first, null);
-                first.pre = newNode;
-                first = newNode;
-            }
-            size++;
+    public int size() {
+        return size;// return the number of items on the queue
+    }
+
+    /**
+     * Here may be an insidious bug, when you execute enlarge arr's capacity
+     * "i<this.size()" is equal to "i<arr.length". But when narrow array's
+     * capacity, it must be "i<this.size", rather than "i<arr.length"
+     * 
+     * @param capacity
+     */
+    private void resize(int capacity) {
+        Item[] newArr = (Item[]) new Object[capacity];
+        for (int i = 0; i < this.size(); i++) {
+            newArr[i] = arr[i];//make clear the difference between this and newArr = arr.Make clear is very important for further study..
         }
-
+        arr = newArr;
     }
 
+    public void enqueue(Item item) {// add the item
+        if (item == null) {
+            throw new java.lang.NullPointerException();
+        } else {
+            if (size == arr.length) {
+                resize(2 * size);
+            }
+            arr[size++] = item;
+        }
+    }
+
+    /**
+     * get the random element in the array, than exchange it with the last
+     * element,and delete the last element(equal to delete arr[index]. but
+     * delete the last element in the array is more convenient.
+     * 
+     * @return
+     */
     public Item dequeue() {// remove and return a random item
         if (size == 0) {
-            throw new java.util.NoSuchElementException("can not remove a random from a null queue");
+            throw new java.util.NoSuchElementException();
         } else {
-            int index = StdRandom.uniform(0, size);// return an integer between
-                                                   // 0 and size-1
-            Node<Item> delNode = getDesNode(index);
-            Item data = delNode.data;
-            if (index == 0) {// delete the first node
-                if (size != 1) {// if only one element left, than set
-                                // first = null is ok.
-                    first = delNode.next;
-                    first.pre = null;
-                    delNode.next = null;
-                    delNode.data = null;// first has no pre
-                } else {
-                    first = null;
-                    last = null;
-                }
-            } else if (index == size - 1) {// delete the last node
-                last = delNode.pre;
-                last.next = null;
-                delNode.pre = null;
-                delNode.data = null;// the last node has no next;
-            } else {// delete the middle node
-                delNode.pre.next = delNode.next;
-                delNode.next.pre = delNode.pre;
-                delNode.pre = null;
-                delNode.next = null;
-                delNode.data = null;
-            }
-            size--;
-            return data;
-        }
+            int index = StdRandom.uniform(0, size);
 
-    }
-
-    private Node<Item> getDesNode(int i) {
-        if (i <= size / 2) {
-            Node<Item> temp = first;
-            for (; i > 0; i--) {
-                temp = temp.next;
-            }
-            return temp;
-        } else {
-            Node<Item> temp = last;
-            for (int j = 0; j < size - 1 - i; j++) {
-                temp = temp.pre;
+            Item temp = arr[index];
+            arr[index] = arr[size - 1];
+            // arr[size - 1] = temp;//tedious operation
+            arr[--size] = null;//// delete reference so that the garbage collector can recycle thecmemory make full use of memory
+            if (size <= arr.length / 4 && (size != 0)) {
+                resize(arr.length / 2);
             }
             return temp;
         }
-
     }
 
     public Item sample() {// return (but do not remove) a random item
         if (size == 0) {
-            throw new java.util.NoSuchElementException("can not remove a random from a null queue");
-        } else {
-            int index = StdRandom.uniform(0, size);// return an integer between
-                                                   // 0 and size-1
-            return getDesNode(index).data;
+            throw new java.util.NoSuchElementException();
+        }else {
+            int index = StdRandom.uniform(0, size);
+            return arr[index];// return a random element in the array
         }
 
     }
 
-    public Iterator<Item> iterator() {// return an independent iterator over
-                                      // items in random order
+    /**
+     * storage the arr's state, when client create two nested iterators over the
+     * same randomized queue,promise two(or more)iterators are independent,
+     * iterator still work.
+     */
+    public Iterator<Item> iterator() {                                     
         return new Iterator<Item>() {
-            boolean[] random = new boolean[size];
-            int i = 0;
-
+            RandomizedQueue<Item> queue = new RandomizedQueue<Item>(RandomizedQueue.this.size);
+            Item[] arr2 = queue.arr;// create a reference
+            private int i = 0;// prepare to iterate in order
             @Override
             public boolean hasNext() {
-                if (i < size) {
+                if (i < queue.size) {
                     return true;
                 }
                 return false;
@@ -119,59 +103,24 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
             @Override
             public Item next() {
-                if (size == 0 || i >= size) {
-                    throw new java.util.NoSuchElementException("no next element");
+                if (i >= queue.size || queue.size == 0) {
+                    throw new java.util.NoSuchElementException();
                 } else {
-                    int index = StdRandom.uniform(0, size);// return an integer
-                                                           // between 0 and
-                                                           // size-1
-                    if (!random[index]) {
-                        i++;
-                        random[index] = true;
-                        return getDesNode(index).data;
-                    } else {
-                        return (next());
+                    if (i == 0) {
+                        for (int j = 0; j <queue.size; j++) {
+                            arr2[j] = arr[j];// storage the current sate of arr.
+                        }
+                        StdRandom.shuffle(arr2, 0, queue.size - 1);// rearrange the array and than iterator it in order                       
                     }
+                    Item data = arr2[i++];
+                    return data;
                 }
-
             }
-
-            public void remove() {
-                throw new java.lang.UnsupportedOperationException("not support remove function");
-            }
-
         };
-
-    }
-
-    private class Node<T> {
-        private T data;
-        private Node<T> next;
-        private Node<T> pre;
-
-        private Node(T data, Node<T> next, Node<T> pre) {
-            this.data = data;
-            this.next = next;
-            this.pre = pre;
-        }
     }
 
     public static void main(String[] args) {// unit testing (optional)
-        // RandomizedQueue<String> que = new RandomizedQueue<>();
-        // que.enqueue("chen");
-        // que.enqueue("yan");
-        // que.enqueue("bin");
-        // que.enqueue("2016");
-        // que.enqueue("coursera");
-        // Iterator<String> iter = que.iterator();
-        // que.dequeue();
-        // que.dequeue();
-        // que.dequeue();
-        // que.dequeue();
-        // que.dequeue();
-        // System.out.println("1111111111111");
-        // while (iter.hasNext()) {
-        // System.out.println(iter.next());
-        // }
+
     }
+
 }
